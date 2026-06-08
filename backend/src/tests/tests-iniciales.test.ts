@@ -1,11 +1,18 @@
-declare module 'express' {
-    export type Request = { body: any };
-    export type Response = {
-        status: (code: number) => Response;
-        json: (body: any) => Response;
-        send: (body: any) => Response;
-    };
-}
+type MockRequest = {
+    body: unknown;
+};
+
+type MockResponse = {
+    status: jest.MockedFunction<(code: number) => MockResponse>;
+    json: jest.MockedFunction<(body: unknown) => MockResponse>;
+};
+
+const createMockResponse = (): MockResponse => {
+    const response = {} as MockResponse;
+    response.status = jest.fn().mockReturnValue(response);
+    response.json = jest.fn().mockReturnValue(response);
+    return response;
+};
 
 describe('Insercion de candidatos', () => {
     const validCandidateData = {
@@ -57,11 +64,8 @@ describe('Insercion de candidatos', () => {
             }));
 
             const { addCandidateController } = await import('../presentation/controllers/candidateController');
-            const req = { body: validCandidateData };
-            const res = {
-                status: jest.fn().mockReturnThis(),
-                json: jest.fn(),
-            };
+            const req: MockRequest = { body: validCandidateData };
+            const res = createMockResponse();
 
             // Act
             await addCandidateController(req as any, res as any);
@@ -89,11 +93,8 @@ describe('Insercion de candidatos', () => {
             }));
 
             const { addCandidateController } = await import('../presentation/controllers/candidateController');
-            const req = { body: invalidCandidateData };
-            const res = {
-                status: jest.fn().mockReturnThis(),
-                json: jest.fn(),
-            };
+            const req: MockRequest = { body: invalidCandidateData };
+            const res = createMockResponse();
 
             // Act
             await addCandidateController(req as any, res as any);
